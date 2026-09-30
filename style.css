@@ -1,0 +1,994 @@
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+html,
+body {
+    width: 100%;
+    height: 100%;
+    overflow: hidden;
+}
+
+body {
+    background: #07100b;
+    color: white;
+    font-family: Arial, sans-serif;
+}
+
+button {
+    cursor: pointer;
+    border: 0;
+}
+
+/* ================= GAME ================= */
+
+#game {
+    position: relative;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ================= HUD ================= */
+
+#hud {
+    position: absolute;
+    z-index: 100;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 85px;
+    padding: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: linear-gradient(
+        #050805,
+        rgba(5, 8, 5, 0.65),
+        transparent
+    );
+}
+
+.playerInfo {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.avatar {
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    border: 2px solid #5cff5c;
+    background: #18231a;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 32px;
+}
+
+.stats {
+    width: 210px;
+}
+
+.name {
+    font-weight: bold;
+    margin-bottom: 4px;
+}
+
+.bar {
+    width: 100%;
+    height: 12px;
+    margin: 3px 0;
+    border-radius: 10px;
+    background: #222;
+    overflow: hidden;
+}
+
+#hpBar {
+    height: 100%;
+    width: 100%;
+    background: #e62d2d;
+    transition: width 0.2s;
+}
+
+#xpBar {
+    height: 100%;
+    width: 0%;
+    background: #9d4dff;
+    transition: width 0.2s;
+}
+
+.level {
+    text-align: center;
+    font-size: 25px;
+    font-weight: bold;
+    color: #ffd83d;
+}
+
+.coins {
+    background: #111a14;
+    padding: 10px 15px;
+    border: 1px solid #e0b82e;
+    border-radius: 10px;
+    color: #ffd83d;
+    font-weight: bold;
+}
+
+#pause {
+    background: #222d35;
+    color: white;
+    font-size: 20px;
+    width: 45px;
+    height: 45px;
+    border-radius: 10px;
+}
+
+/* ================= WORLD ================= */
+
+#world {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+}
+
+#map {
+    position: absolute;
+    width: 2400px;
+    height: 1700px;
+
+    background:
+        radial-gradient(
+            circle at 20% 30%,
+            #315a2b 0 80px,
+            transparent 82px
+        ),
+        radial-gradient(
+            circle at 70% 70%,
+            #284d25 0 100px,
+            transparent 102px
+        ),
+        radial-gradient(
+            circle at 40% 80%,
+            #3a612d 0 60px,
+            transparent 62px
+        ),
+        #173018;
+
+    background-size: auto;
+}
+
+#map::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        ),
+        linear-gradient(
+            90deg,
+            rgba(255,255,255,0.025) 1px,
+            transparent 1px
+        );
+
+    background-size: 60px 60px;
+
+    pointer-events: none;
+}
+
+/* ================= PLAYER ================= */
+
+#player {
+    position: absolute;
+    width: 70px;
+    height: 85px;
+    z-index: 20;
+
+    text-align: center;
+
+    transform: translate(-50%, -50%);
+
+    transition: transform 0.05s;
+}
+
+.playerEmoji {
+    font-size: 52px;
+
+    filter:
+        drop-shadow(0 0 5px #69ff69);
+}
+
+.playerTag {
+    font-size: 10px;
+
+    background: #000b;
+
+    padding: 3px 6px;
+
+    border-radius: 4px;
+}
+
+/* ================= MONSTERS ================= */
+
+.monster {
+    position: absolute;
+
+    width: 70px;
+    height: 85px;
+
+    z-index: 15;
+
+    text-align: center;
+
+    transform: translate(-50%, -50%);
+}
+
+.monsterEmoji {
+    font-size: 48px;
+
+    filter:
+        drop-shadow(0 0 5px #ff3030);
+}
+
+.monsterName {
+    font-size: 9px;
+
+    background: #000b;
+
+    padding: 2px 4px;
+
+    border-radius: 3px;
+}
+
+.monsterBar {
+    width: 65px;
+    height: 7px;
+
+    background: #260606;
+
+    border-radius: 5px;
+
+    overflow: hidden;
+
+    margin: auto;
+}
+
+.monsterHP {
+    width: 100%;
+    height: 100%;
+
+    background: #e22;
+
+    transition: width 0.15s;
+}
+
+/* ================= BOSS ================= */
+
+#boss {
+    position: absolute;
+
+    width: 150px;
+    height: 180px;
+
+    z-index: 18;
+
+    text-align: center;
+
+    transform: translate(-50%, -50%);
+}
+
+#bossEmoji {
+    font-size: 105px;
+
+    filter:
+        drop-shadow(0 0 15px #ff2424);
+}
+
+#bossName {
+    color: #ff4646;
+
+    font-weight: bold;
+
+    text-shadow:
+        0 0 8px #ff0000;
+}
+
+#bossHud {
+    position: absolute;
+
+    z-index: 110;
+
+    top: 90px;
+    left: 50%;
+
+    transform: translateX(-50%);
+
+    width: min(500px, 80%);
+
+    text-align: center;
+}
+
+#bossBarBack {
+    width: 100%;
+    height: 18px;
+
+    background: #250606;
+
+    border: 2px solid #8b2020;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+}
+
+#bossBar {
+    height: 100%;
+    width: 100%;
+
+    background: #e52323;
+
+    transition: width 0.15s;
+}
+
+#bossTitle {
+    display: block;
+
+    margin-bottom: 4px;
+
+    color: #ff5252;
+
+    text-shadow:
+        0 0 8px red;
+}
+
+#bossText {
+    color: #ddd;
+}
+
+/* ================= DAMAGE ================= */
+
+.damage {
+    position: absolute;
+
+    z-index: 200;
+
+    font-size: 22px;
+
+    font-weight: bold;
+
+    pointer-events: none;
+
+    animation: damage 700ms forwards;
+
+    text-shadow:
+        2px 2px 3px #000;
+}
+
+.critical {
+    color: #ffd400;
+
+    font-size: 30px;
+
+    text-shadow:
+        0 0 10px #ff9d00;
+}
+
+@keyframes damage {
+
+    from {
+        opacity: 1;
+
+        transform:
+            translateY(0)
+            scale(1);
+    }
+
+    to {
+        opacity: 0;
+
+        transform:
+            translateY(-60px)
+            scale(1.2);
+    }
+}
+
+/* ================= HIT EFFECT ================= */
+
+.hit {
+    position: absolute;
+
+    z-index: 100;
+
+    font-size: 35px;
+
+    pointer-events: none;
+
+    animation: hit 0.4s forwards;
+}
+
+@keyframes hit {
+
+    from {
+        opacity: 1;
+
+        transform:
+            scale(0.4)
+            rotate(0deg);
+    }
+
+    to {
+        opacity: 0;
+
+        transform:
+            scale(1.7)
+            rotate(90deg);
+    }
+}
+
+/* ================= BOTTOM MENU ================= */
+
+#bottom {
+    position: absolute;
+
+    z-index: 100;
+
+    bottom: 0;
+    left: 0;
+
+    width: 100%;
+
+    min-height: 65px;
+
+    padding: 8px;
+
+    display: flex;
+
+    justify-content: center;
+
+    gap: 8px;
+
+    background:
+        linear-gradient(
+            transparent,
+            #050805
+        );
+}
+
+.action {
+    background: #202c35;
+
+    color: white;
+
+    padding: 12px 18px;
+
+    border-radius: 9px;
+
+    border: 1px solid #56636c;
+
+    font-weight: bold;
+
+    transition:
+        transform 0.15s,
+        background 0.15s;
+}
+
+.action:hover {
+    background: #33434e;
+
+    transform: translateY(-2px);
+}
+
+.action:active {
+    transform: scale(0.94);
+}
+
+.attack {
+    background: #642626;
+}
+
+.attack:hover {
+    background: #8a3030;
+}
+
+/* ================= LOCATION ================= */
+
+#location {
+    position: absolute;
+
+    z-index: 90;
+
+    left: 12px;
+    bottom: 78px;
+
+    padding: 8px 12px;
+
+    background: #000b;
+
+    border-left:
+        3px solid #63db55;
+
+    border-radius: 5px;
+}
+
+#locationName {
+    color: #71e568;
+}
+
+#weapon {
+    position: absolute;
+
+    z-index: 90;
+
+    right: 12px;
+    bottom: 78px;
+
+    padding: 8px 12px;
+
+    background: #000b;
+
+    border-right:
+        3px solid #e0bd42;
+
+    border-radius: 5px;
+}
+
+#weapon span {
+    color: #ffd84a;
+}
+
+/* ================= PANELS ================= */
+
+.panel {
+    position: absolute;
+
+    z-index: 500;
+
+    left: 50%;
+    top: 50%;
+
+    transform:
+        translate(-50%, -50%);
+
+    width: min(650px, 92vw);
+
+    max-height: 80vh;
+
+    overflow: auto;
+
+    padding: 20px;
+
+    background: #101920;
+
+    border:
+        1px solid #596873;
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 70px #000;
+}
+
+.panel h2 {
+    color: #ffd63b;
+
+    margin-bottom: 15px;
+}
+
+.close {
+    float: right;
+
+    background: #672525;
+
+    color: white;
+
+    padding: 8px 12px;
+
+    border-radius: 7px;
+}
+
+.close:hover {
+    background: #9a3030;
+}
+
+/* ================= SHOP ================= */
+
+.shopItem,
+.upgradeItem {
+    display: flex;
+
+    align-items: center;
+
+    justify-content: space-between;
+
+    gap: 10px;
+
+    padding: 13px;
+
+    margin: 8px 0;
+
+    background: #18232a;
+
+    border-radius: 10px;
+
+    border:
+        1px solid #34434d;
+}
+
+.shopItem:hover,
+.upgradeItem:hover {
+    background: #203039;
+}
+
+.buy {
+    background: #327441;
+
+    color: white;
+
+    padding: 9px;
+
+    border-radius: 7px;
+
+    font-weight: bold;
+}
+
+.buy:hover {
+    background: #419653;
+}
+
+.buy:active {
+    transform: scale(0.95);
+}
+
+/* ================= LOCATIONS ================= */
+
+.locations {
+    display: grid;
+
+    grid-template-columns:
+        repeat(2, 1fr);
+
+    gap: 10px;
+}
+
+.locationBtn {
+    padding: 20px 8px;
+
+    background: #1a2920;
+
+    color: white;
+
+    border:
+        1px solid #46644b;
+
+    border-radius: 10px;
+
+    font-size: 16px;
+
+    transition: 0.2s;
+}
+
+.locationBtn:hover {
+    background: #29432d;
+
+    transform:
+        translateY(-2px);
+}
+
+.locked {
+    opacity: 0.35;
+}
+
+/* ================= OVERLAY ================= */
+
+.overlay {
+    position: absolute;
+
+    z-index: 1000;
+
+    inset: 0;
+
+    display: flex;
+
+    justify-content: center;
+
+    align-items: center;
+
+    background: rgba(0, 0, 0, 0.75);
+
+    backdrop-filter:
+        blur(5px);
+}
+
+.box {
+    width: min(420px, 90vw);
+
+    padding: 30px;
+
+    text-align: center;
+
+    background: #101920;
+
+    border:
+        1px solid #65747d;
+
+    border-radius: 15px;
+
+    box-shadow:
+        0 20px 80px #000;
+}
+
+.box h1 {
+    margin-bottom: 20px;
+
+    color: #ffd83d;
+}
+
+.box p {
+    margin: 8px 0;
+
+    color: #ddd;
+}
+
+.box button {
+    width: 100%;
+
+    padding: 13px;
+
+    margin: 5px 0;
+
+    background: #293a45;
+
+    color: white;
+
+    border-radius: 8px;
+
+    font-weight: bold;
+}
+
+.box button:hover {
+    background: #3d5361;
+}
+
+/* ================= HIDDEN ================= */
+
+.hidden {
+    display: none !important;
+}
+
+/* ================= MOBILE CONTROLS ================= */
+
+#mobile {
+    display: none;
+
+    position: absolute;
+
+    z-index: 300;
+
+    left: 8px;
+    bottom: 80px;
+}
+
+.moveRow {
+    display: flex;
+
+    justify-content: center;
+}
+
+.moveBtn,
+.mobileAttack {
+    width: 48px;
+    height: 48px;
+
+    margin: 3px;
+
+    border-radius: 50%;
+
+    background: #17242b;
+
+    color: white;
+
+    border:
+        1px solid #64727a;
+
+    font-size: 18px;
+
+    box-shadow:
+        0 3px 10px #0008;
+}
+
+.moveBtn:active,
+.mobileAttack:active {
+    transform: scale(0.9);
+}
+
+.mobileAttack {
+    background: #662525;
+}
+
+.mobileAttack:hover {
+    background: #8c3030;
+}
+
+/* ================= DEVELOPER ================= */
+
+#developer {
+    position: absolute;
+
+    z-index: 2000;
+
+    bottom: 2px;
+    left: 50%;
+
+    transform:
+        translateX(-50%);
+
+    font-size: 9px;
+
+    color: #888;
+}
+
+#developer b {
+    color: #e2c449;
+}
+
+/* ================= SCROLLBAR ================= */
+
+.panel::-webkit-scrollbar {
+    width: 7px;
+}
+
+.panel::-webkit-scrollbar-track {
+    background: #0a1014;
+}
+
+.panel::-webkit-scrollbar-thumb {
+    background: #53636d;
+
+    border-radius: 10px;
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width: 700px) {
+
+    #hud {
+        height: 72px;
+
+        padding: 6px;
+    }
+
+    .avatar {
+        width: 43px;
+        height: 43px;
+
+        font-size: 25px;
+    }
+
+    .stats {
+        width: 130px;
+
+        font-size: 11px;
+    }
+
+    .bar {
+        height: 9px;
+    }
+
+    .level {
+        display: none;
+    }
+
+    .coins {
+        font-size: 12px;
+
+        padding: 8px;
+    }
+
+    #pause {
+        width: 38px;
+        height: 38px;
+
+        font-size: 17px;
+    }
+
+    #mobile {
+        display: block;
+    }
+
+    #bottom {
+        height: 58px;
+
+        padding: 5px;
+
+        gap: 4px;
+    }
+
+    .action {
+        padding: 8px 6px;
+
+        font-size: 10px;
+    }
+
+    #location,
+    #weapon {
+        bottom: 68px;
+
+        font-size: 10px;
+
+        padding: 5px 7px;
+    }
+
+    #weapon {
+        max-width: 125px;
+    }
+
+    #location {
+        max-width: 135px;
+    }
+
+    #bossHud {
+        top: 78px;
+
+        width: 80%;
+    }
+
+    #bossEmoji {
+        font-size: 80px;
+    }
+
+    .panel {
+        padding: 15px;
+
+        max-height: 85vh;
+    }
+
+    .locations {
+        grid-template-columns: 1fr 1fr;
+    }
+
+    .locationBtn {
+        padding: 15px 5px;
+
+        font-size: 13px;
+    }
+}
+
+/* ================= VERY SMALL PHONE ================= */
+
+@media (max-width: 420px) {
+
+    .stats {
+        width: 105px;
+    }
+
+    .name {
+        font-size: 10px;
+    }
+
+    .coins {
+        padding: 6px;
+
+        font-size: 10px;
+    }
+
+    #bottom {
+        flex-wrap: nowrap;
+    }
+
+    .action {
+        padding: 7px 4px;
+
+        font-size: 9px;
+    }
+
+    #developer {
+        font-size: 7px;
+    }
+}

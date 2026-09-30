@@ -1,0 +1,2936 @@
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Monster Hunter | ULUG'BEK.R</title>
+
+<style>
+*{
+    box-sizing:border-box;
+    margin:0;
+    padding:0;
+    user-select:none;
+}
+
+body{
+    overflow:hidden;
+    background:#07100b;
+    color:white;
+    font-family:Arial,sans-serif;
+}
+
+button{
+    cursor:pointer;
+    border:0;
+}
+
+#game{
+    position:relative;
+    width:100vw;
+    height:100vh;
+    overflow:hidden;
+}
+
+/* ================= HUD ================= */
+
+#hud{
+    position:absolute;
+    z-index:100;
+    top:0;
+    left:0;
+    width:100%;
+    height:85px;
+    padding:10px;
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    background:linear-gradient(#050805,rgba(5,8,5,.65),transparent);
+}
+
+.playerInfo{
+    display:flex;
+    align-items:center;
+    gap:10px;
+}
+
+.avatar{
+    width:55px;
+    height:55px;
+    border-radius:50%;
+    border:2px solid #5cff5c;
+    background:#18231a;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:32px;
+}
+
+.stats{
+    width:210px;
+}
+
+.name{
+    font-weight:bold;
+    margin-bottom:4px;
+}
+
+.bar{
+    width:100%;
+    height:12px;
+    margin:3px 0;
+    border-radius:10px;
+    background:#222;
+    overflow:hidden;
+}
+
+#hpBar{
+    height:100%;
+    width:100%;
+    background:#e62d2d;
+}
+
+#xpBar{
+    height:100%;
+    width:0%;
+    background:#9d4dff;
+}
+
+.level{
+    text-align:center;
+    font-size:25px;
+    font-weight:bold;
+    color:#ffd83d;
+}
+
+.coins{
+    background:#111a14;
+    padding:10px 15px;
+    border:1px solid #e0b82e;
+    border-radius:10px;
+    color:#ffd83d;
+    font-weight:bold;
+}
+
+#pause{
+    background:#222d35;
+    color:white;
+    font-size:20px;
+    width:45px;
+    height:45px;
+    border-radius:10px;
+}
+
+/* ================= WORLD ================= */
+
+#world{
+    position:absolute;
+    inset:0;
+    overflow:hidden;
+}
+
+#map{
+    position:absolute;
+    width:2400px;
+    height:1700px;
+    background:
+        radial-gradient(circle at 20% 30%,#315a2b 0 80px,transparent 82px),
+        radial-gradient(circle at 70% 70%,#284d25 0 100px,transparent 102px),
+        radial-gradient(circle at 40% 80%,#3a612d 0 60px,transparent 62px),
+        #173018;
+    background-size:auto;
+}
+
+/* grid */
+#map:after{
+    content:"";
+    position:absolute;
+    inset:0;
+    background-image:
+        linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),
+        linear-gradient(90deg,rgba(255,255,255,.025) 1px,transparent 1px);
+    background-size:60px 60px;
+    pointer-events:none;
+}
+
+/* ================= PLAYER ================= */
+
+#player{
+    position:absolute;
+    width:70px;
+    height:85px;
+    z-index:20;
+    text-align:center;
+    transform:translate(-50%,-50%);
+}
+
+.playerEmoji{
+    font-size:52px;
+}
+
+.playerTag{
+    font-size:10px;
+    background:#000b;
+    padding:3px 6px;
+    border-radius:4px;
+}
+
+/* ================= MONSTERS ================= */
+
+.monster{
+    position:absolute;
+    width:70px;
+    height:85px;
+    z-index:15;
+    text-align:center;
+    transform:translate(-50%,-50%);
+}
+
+.monsterEmoji{
+    font-size:48px;
+}
+
+.monsterName{
+    font-size:9px;
+    background:#000b;
+    padding:2px 4px;
+    border-radius:3px;
+}
+
+.monsterBar{
+    width:65px;
+    height:7px;
+    background:#260606;
+    border-radius:5px;
+    overflow:hidden;
+    margin:auto;
+}
+
+.monsterHP{
+    width:100%;
+    height:100%;
+    background:#e22;
+}
+
+/* ================= BOSS ================= */
+
+#boss{
+    position:absolute;
+    width:150px;
+    height:180px;
+    z-index:18;
+    text-align:center;
+    transform:translate(-50%,-50%);
+}
+
+#bossEmoji{
+    font-size:105px;
+}
+
+#bossName{
+    color:#ff4646;
+    font-weight:bold;
+}
+
+#bossHud{
+    position:absolute;
+    z-index:110;
+    top:90px;
+    left:50%;
+    transform:translateX(-50%);
+    width:min(500px,80%);
+    text-align:center;
+}
+
+#bossBarBack{
+    width:100%;
+    height:18px;
+    background:#250606;
+    border:2px solid #8b2020;
+    border-radius:10px;
+    overflow:hidden;
+}
+
+#bossBar{
+    height:100%;
+    width:100%;
+    background:#e52323;
+}
+
+/* ================= DAMAGE ================= */
+
+.damage{
+    position:absolute;
+    z-index:200;
+    font-size:22px;
+    font-weight:bold;
+    pointer-events:none;
+    animation:damage 700ms forwards;
+}
+
+.critical{
+    color:#ffd400;
+    font-size:30px;
+}
+
+@keyframes damage{
+    from{
+        opacity:1;
+        transform:translateY(0);
+    }
+    to{
+        opacity:0;
+        transform:translateY(-60px);
+    }
+}
+
+.hit{
+    position:absolute;
+    z-index:100;
+    font-size:35px;
+    pointer-events:none;
+    animation:hit .4s forwards;
+}
+
+@keyframes hit{
+    from{
+        opacity:1;
+        transform:scale(.4);
+    }
+    to{
+        opacity:0;
+        transform:scale(1.7);
+    }
+}
+
+/* ================= BOTTOM ================= */
+
+#bottom{
+    position:absolute;
+    z-index:100;
+    bottom:0;
+    left:0;
+    width:100%;
+    min-height:65px;
+    padding:8px;
+    display:flex;
+    justify-content:center;
+    gap:8px;
+    background:linear-gradient(transparent,#050805);
+}
+
+.action{
+    background:#202c35;
+    color:white;
+    padding:12px 18px;
+    border-radius:9px;
+    border:1px solid #56636c;
+    font-weight:bold;
+}
+
+.action:hover{
+    background:#33434e;
+}
+
+.attack{
+    background:#642626;
+}
+
+/* ================= INFO ================= */
+
+#location{
+    position:absolute;
+    z-index:90;
+    left:12px;
+    bottom:78px;
+    padding:8px 12px;
+    background:#000b;
+    border-left:3px solid #63db55;
+    border-radius:5px;
+}
+
+#weapon{
+    position:absolute;
+    z-index:90;
+    right:12px;
+    bottom:78px;
+    padding:8px 12px;
+    background:#000b;
+    border-right:3px solid #e0bd42;
+    border-radius:5px;
+}
+
+/* ================= PANELS ================= */
+
+.panel{
+    position:absolute;
+    z-index:500;
+    left:50%;
+    top:50%;
+    transform:translate(-50%,-50%);
+    width:min(650px,92vw);
+    max-height:80vh;
+    overflow:auto;
+    padding:20px;
+    background:#101920;
+    border:1px solid #596873;
+    border-radius:15px;
+    box-shadow:0 20px 70px #000;
+}
+
+.panel h2{
+    color:#ffd63b;
+    margin-bottom:15px;
+}
+
+.close{
+    float:right;
+    background:#672525;
+    color:white;
+    padding:8px 12px;
+    border-radius:7px;
+}
+
+/* shop */
+
+.shopItem,
+.upgradeItem{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    gap:10px;
+    padding:13px;
+    margin:8px 0;
+    background:#18232a;
+    border-radius:10px;
+    border:1px solid #34434d;
+}
+
+.buy{
+    background:#327441;
+    color:white;
+    padding:9px;
+    border-radius:7px;
+}
+
+/* locations */
+
+.locations{
+    display:grid;
+    grid-template-columns:repeat(2,1fr);
+    gap:10px;
+}
+
+.locationBtn{
+    padding:20px 8px;
+    background:#1a2920;
+    color:white;
+    border:1px solid #46644b;
+    border-radius:10px;
+    font-size:16px;
+}
+
+.locked{
+    opacity:.35;
+}
+
+/* ================= OVERLAY ================= */
+
+.overlay{
+    position:absolute;
+    z-index:1000;
+    inset:0;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    background:#000b;
+}
+
+.box{
+    width:min(420px,90vw);
+    padding:30px;
+    text-align:center;
+    background:#101920;
+    border:1px solid #65747d;
+    border-radius:15px;
+}
+
+.box h1{
+    margin-bottom:20px;
+}
+
+.box button{
+    width:100%;
+    padding:13px;
+    margin:5px 0;
+    background:#293a45;
+    color:white;
+    border-radius:8px;
+}
+
+.hidden{
+    display:none!important;
+}
+
+/* ================= MOBILE ================= */
+
+#mobile{
+    display:none;
+    position:absolute;
+    z-index:300;
+    left:8px;
+    bottom:80px;
+}
+
+.moveRow{
+    display:flex;
+    justify-content:center;
+}
+
+.moveBtn,
+.mobileAttack{
+    width:48px;
+    height:48px;
+    margin:3px;
+    border-radius:50%;
+    background:#17242b;
+    color:white;
+    border:1px solid #64727a;
+    font-size:18px;
+}
+
+.mobileAttack{
+    background:#662525;
+}
+
+#developer{
+    position:absolute;
+    z-index:2000;
+    bottom:2px;
+    left:50%;
+    transform:translateX(-50%);
+    font-size:9px;
+    color:#888;
+}
+
+#developer b{
+    color:#e2c449;
+}
+
+@media(max-width:700px){
+
+    .stats{
+        width:130px;
+    }
+
+    .level{
+        display:none;
+    }
+
+    .coins{
+        font-size:12px;
+        padding:8px;
+    }
+
+    #mobile{
+        display:block;
+    }
+
+    #bottom{
+        height:58px;
+    }
+
+    .action{
+        padding:8px 6px;
+        font-size:10px;
+    }
+
+    #location,
+    #weapon{
+        bottom:68px;
+        font-size:10px;
+    }
+
+    #bossHud{
+        top:78px;
+    }
+}
+</style>
+</head>
+
+<body>
+
+<div id="game">
+
+    <!-- HUD -->
+    <div id="hud">
+
+        <div class="playerInfo">
+
+            <div class="avatar">🧙</div>
+
+            <div class="stats">
+
+                <div class="name">Qahramon</div>
+
+                ❤️ <span id="hpText">100 / 100</span>
+                <div class="bar">
+                    <div id="hpBar"></div>
+                </div>
+
+                ⭐ <span id="xpText">0 / 100</span>
+                <div class="bar">
+                    <div id="xpBar"></div>
+                </div>
+
+            </div>
+
+        </div>
+
+        <div class="level">
+            LV <span id="level">1</span>
+        </div>
+
+        <div class="coins">
+            💰 <span id="coins">250</span>
+        </div>
+
+        <button id="pause">⏸️</button>
+
+    </div>
+
+
+    <!-- WORLD -->
+    <div id="world">
+
+        <div id="map">
+
+            <div id="player">
+                <div class="playerEmoji">🧙</div>
+                <div class="playerTag">ULUG'BEK</div>
+            </div>
+
+            <div id="boss" class="hidden">
+                <div id="bossEmoji">👑</div>
+                <div id="bossName">BOSS</div>
+            </div>
+
+        </div>
+
+        <div id="bossHud" class="hidden">
+            <b id="bossTitle">👑 BOSS</b>
+            <div id="bossBarBack">
+                <div id="bossBar"></div>
+            </div>
+            <small id="bossText">1000 / 1000</small>
+        </div>
+
+    </div>
+
+
+    <!-- LOCATION -->
+    <div id="location">
+        🗺️ <b id="locationName">DARK FOREST</b>
+        <br>
+        <small>Level <span id="locationLevel">1</span></small>
+    </div>
+
+
+    <!-- WEAPON -->
+    <div id="weapon">
+        🏹 Hunter Bow
+        <br>
+        ⚔️ Damage: <span id="damage">20</span>
+        <br>
+        🎯 Critical: <span id="critical">10</span>%
+    </div>
+
+
+    <!-- BOTTOM -->
+    <div id="bottom">
+
+        <button class="action attack" id="shoot">
+            🏹 OTISH
+        </button>
+
+        <button class="action attack" id="melee">
+            ⚔️ HUJUM
+        </button>
+
+        <button class="action" id="shop">
+            🛒 SHOP
+        </button>
+
+        <button class="action" id="upgrade">
+            ⚔️ UPGRADE
+        </button>
+
+        <button class="action" id="mapButton">
+            🗺️ MAP
+        </button>
+
+        <button class="action" id="potion">
+            🧪 DORI
+        </button>
+
+    </div>
+
+
+    <!-- MOBILE -->
+    <div id="mobile">
+
+        <div class="moveRow">
+            <button class="moveBtn" data-key="up">⬆️</button>
+        </div>
+
+        <div class="moveRow">
+            <button class="moveBtn" data-key="left">⬅️</button>
+            <button class="moveBtn" data-key="down">⬇️</button>
+            <button class="moveBtn" data-key="right">➡️</button>
+        </div>
+
+        <div class="moveRow">
+            <button class="mobileAttack" id="mobileShoot">🏹</button>
+            <button class="mobileAttack" id="mobileMelee">⚔️</button>
+        </div>
+
+    </div>
+
+
+    <!-- SHOP -->
+    <div id="shopPanel" class="panel hidden">
+
+        <button class="close" data-close="shopPanel">✖</button>
+
+        <h2>🛒 MAGAZIN</h2>
+
+        <div class="shopItem">
+            <div>
+                🧪 <b>Oq dori</b>
+                <br>
+                <small>HP +50</small>
+                <br>
+                💰 50
+            </div>
+            <button class="buy" id="buyPotion">OLISH</button>
+        </div>
+
+        <div class="shopItem">
+            <div>
+                🏹 <b>20 ta o'q</b>
+                <br>
+                💰 30
+            </div>
+            <button class="buy" id="buyArrows">OLISH</button>
+        </div>
+
+        <div class="shopItem">
+            <div>
+                ⚔️ <b>Qurol</b>
+                <br>
+                Damage +10
+                <br>
+                💰 200
+            </div>
+            <button class="buy" id="buyWeapon">OLISH</button>
+        </div>
+
+        <div class="shopItem">
+            <div>
+                🛡️ <b>Armor</b>
+                <br>
+                Defense +10
+                <br>
+                💰 300
+            </div>
+            <button class="buy" id="buyArmor">OLISH</button>
+        </div>
+
+    </div>
+
+
+    <!-- UPGRADE -->
+    <div id="upgradePanel" class="panel hidden">
+
+        <button class="close" data-close="upgradePanel">✖</button>
+
+        <h2>⚔️ UPGRADE</h2>
+
+        <div class="upgradeItem">
+            <div>
+                ⚔️ Damage
+                <br>
+                Level:
+                <span id="damageLevel">1</span>
+            </div>
+            <button class="buy" id="upDamage">UPGRADE</button>
+        </div>
+
+        <div class="upgradeItem">
+            <div>
+                ❤️ Max HP
+                <br>
+                Level:
+                <span id="hpLevel">1</span>
+            </div>
+            <button class="buy" id="upHP">UPGRADE</button>
+        </div>
+
+        <div class="upgradeItem">
+            <div>
+                🎯 Critical
+                <br>
+                Level:
+                <span id="criticalLevel">1</span>
+            </div>
+            <button class="buy" id="upCritical">UPGRADE</button>
+        </div>
+
+        <div class="upgradeItem">
+            <div>
+                🏃 Speed
+                <br>
+                Level:
+                <span id="speedLevel">1</span>
+            </div>
+            <button class="buy" id="upSpeed">UPGRADE</button>
+        </div>
+
+    </div>
+
+
+    <!-- MAP PANEL -->
+    <div id="mapPanel" class="panel hidden">
+
+        <button class="close" data-close="mapPanel">✖</button>
+
+        <h2>🗺️ LOKATSIYALAR</h2>
+
+        <div class="locations">
+
+            <button class="locationBtn" data-location="0">
+                🌲<br>
+                DARK FOREST<br>
+                <small>LEVEL 1</small>
+            </button>
+
+            <button class="locationBtn" data-location="1">
+                🏜️<br>
+                DESERT<br>
+                <small>LEVEL 5</small>
+            </button>
+
+            <button class="locationBtn" data-location="2">
+                ❄️<br>
+                ICE LAND<br>
+                <small>LEVEL 10</small>
+            </button>
+
+            <button class="locationBtn" data-location="3">
+                🏚️<br>
+                DEAD CITY<br>
+                <small>LEVEL 15</small>
+            </button>
+
+            <button class="locationBtn" data-location="4">
+                🔥<br>
+                VOLCANO<br>
+                <small>LEVEL 20</small>
+            </button>
+
+            <button class="locationBtn" data-location="5">
+                👑<br>
+                BOSS CASTLE<br>
+                <small>LEVEL 25</small>
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- PAUSE -->
+    <div id="pausePanel" class="overlay hidden">
+
+        <div class="box">
+
+            <h1>⏸️ PAUSE</h1>
+
+            <button id="continue">
+                ▶️ DAVOM ETISH
+            </button>
+
+            <button id="restart">
+                🔄 RESTART
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <!-- GAME OVER -->
+    <div id="gameOver" class="overlay hidden">
+
+        <div class="box">
+
+            <h1>💀 GAME OVER</h1>
+
+            <p>⭐ Level: <b id="finalLevel">1</b></p>
+            <p>💰 Coin: <b id="finalCoins">0</b></p>
+            <p>👾 Kill: <b id="finalKills">0</b></p>
+
+            <button id="gameRestart">
+                🔄 QAYTA O'YNASH
+            </button>
+
+        </div>
+
+    </div>
+
+
+    <div id="developer">
+        Ishlab chiqaruvchi: <b>ULUG'BEK.R</b>
+    </div>
+
+</div>
+
+
+<script>
+"use strict";
+
+/* =========================================================
+   MONSTER HUNTER
+   HAMMASI BIR FAYLDA
+   ========================================================= */
+
+const map = document.getElementById("map");
+const playerEl = document.getElementById("player");
+
+const hpBar = document.getElementById("hpBar");
+const xpBar = document.getElementById("xpBar");
+
+const hpText = document.getElementById("hpText");
+const xpText = document.getElementById("xpText");
+
+const levelEl = document.getElementById("level");
+const coinsEl = document.getElementById("coins");
+
+const damageEl = document.getElementById("damage");
+const criticalEl = document.getElementById("critical");
+
+const world = document.getElementById("world");
+
+
+/* ================= GAME DATA ================= */
+
+const MAP_W = 2400;
+const MAP_H = 1700;
+
+const locations = [
+    ["DARK FOREST","🌲",1],
+    ["DESERT","🏜️",5],
+    ["ICE LAND","❄️",10],
+    ["DEAD CITY","🏚️",15],
+    ["VOLCANO","🔥",20],
+    ["BOSS CASTLE","👑",25]
+];
+
+let player = {
+    x:1200,
+    y:850,
+
+    hp:100,
+    maxHP:100,
+
+    level:1,
+    xp:0,
+    xpNeed:100,
+
+    coins:250,
+
+    damage:20,
+    critical:10,
+
+    speed:5,
+    armor:0,
+
+    potions:2,
+    arrows:50,
+
+    damageLevel:1,
+    hpLevel:1,
+    criticalLevel:1,
+    speedLevel:1,
+
+    kills:0
+};
+
+let locationIndex = 0;
+
+let monsters = [];
+
+let boss = null;
+
+let projectiles = [];
+
+let keys = {};
+
+let mouse = {
+    x:0,
+    y:0
+};
+
+let paused = false;
+
+let gameOver = false;
+
+let lastTime = performance.now();
+
+let spawnTimer = 0;
+
+
+/* ================= SAVE ================= */
+
+function save(){
+
+    localStorage.setItem(
+        "ULUGBEK_MONSTER_HUNTER",
+        JSON.stringify({
+            player,
+            locationIndex
+        })
+    );
+}
+
+
+function load(){
+
+    const saved =
+        localStorage.getItem(
+            "ULUGBEK_MONSTER_HUNTER"
+        );
+
+    if(!saved) return;
+
+    try{
+
+        const data = JSON.parse(saved);
+
+        if(data.player){
+            player = {
+                ...player,
+                ...data.player
+            };
+        }
+
+        if(
+            typeof data.locationIndex === "number"
+        ){
+            locationIndex =
+                data.locationIndex;
+        }
+
+    }catch(e){
+
+        console.log(e);
+
+    }
+
+}
+
+
+/* ================= HUD ================= */
+
+function hud(){
+
+    const hpPercent =
+        Math.max(
+            0,
+            player.hp / player.maxHP * 100
+        );
+
+    hpBar.style.width =
+        hpPercent + "%";
+
+    hpText.textContent =
+        Math.ceil(player.hp) +
+        " / " +
+        player.maxHP;
+
+
+    xpBar.style.width =
+        Math.min(
+            100,
+            player.xp / player.xpNeed * 100
+        ) + "%";
+
+    xpText.textContent =
+        player.xp +
+        " / " +
+        player.xpNeed;
+
+
+    levelEl.textContent =
+        player.level;
+
+    coinsEl.textContent =
+        player.coins;
+
+    damageEl.textContent =
+        player.damage;
+
+    criticalEl.textContent =
+        player.critical;
+
+
+    document.getElementById(
+        "damageLevel"
+    ).textContent =
+        player.damageLevel;
+
+    document.getElementById(
+        "hpLevel"
+    ).textContent =
+        player.hpLevel;
+
+    document.getElementById(
+        "criticalLevel"
+    ).textContent =
+        player.criticalLevel;
+
+    document.getElementById(
+        "speedLevel"
+    ).textContent =
+        player.speedLevel;
+
+
+    const loc =
+        locations[locationIndex];
+
+    document.getElementById(
+        "locationName"
+    ).textContent =
+        loc[1] + " " + loc[0];
+
+    document.getElementById(
+        "locationLevel"
+    ).textContent =
+        loc[2];
+
+}
+
+
+/* ================= PLAYER ================= */
+
+function drawPlayer(){
+
+    playerEl.style.left =
+        player.x + "px";
+
+    playerEl.style.top =
+        player.y + "px";
+
+}
+
+
+/* ================= CAMERA ================= */
+
+function camera(){
+
+    const w = world.clientWidth;
+    const h = world.clientHeight;
+
+    let cx =
+        player.x - w / 2;
+
+    let cy =
+        player.y - h / 2;
+
+    cx =
+        Math.max(
+            0,
+            Math.min(
+                MAP_W - w,
+                cx
+            )
+        );
+
+    cy =
+        Math.max(
+            0,
+            Math.min(
+                MAP_H - h,
+                cy
+            )
+        );
+
+    map.style.left =
+        -cx + "px";
+
+    map.style.top =
+        -cy + "px";
+
+}
+
+
+/* ================= MOVEMENT ================= */
+
+function move(dt){
+
+    if(paused || gameOver)
+        return;
+
+    let dx = 0;
+    let dy = 0;
+
+    if(keys.w || keys.ArrowUp)
+        dy--;
+
+    if(keys.s || keys.ArrowDown)
+        dy++;
+
+    if(keys.a || keys.ArrowLeft)
+        dx--;
+
+    if(keys.d || keys.ArrowRight)
+        dx++;
+
+
+    if(dx || dy){
+
+        const len =
+            Math.sqrt(
+                dx*dx + dy*dy
+            );
+
+        dx /= len;
+        dy /= len;
+
+        player.x +=
+            dx * player.speed * dt / 16;
+
+        player.y +=
+            dy * player.speed * dt / 16;
+
+    }
+
+
+    player.x =
+        Math.max(
+            40,
+            Math.min(
+                MAP_W - 40,
+                player.x
+            )
+        );
+
+    player.y =
+        Math.max(
+            40,
+            Math.min(
+                MAP_H - 40,
+                player.y
+            )
+        );
+
+
+    drawPlayer();
+
+}
+
+
+/* ================= KEYBOARD ================= */
+
+document.addEventListener(
+    "keydown",
+    e => {
+
+        keys[e.key] = true;
+
+        if(e.key === "Escape"){
+            togglePause();
+        }
+
+        if(e.code === "Space"){
+            melee();
+        }
+
+        if(
+            e.key.toLowerCase() === "e"
+        ){
+            potion();
+        }
+
+    }
+);
+
+
+document.addEventListener(
+    "keyup",
+    e => {
+
+        keys[e.key] = false;
+
+    }
+);
+
+
+/* ================= MOUSE ================= */
+
+world.addEventListener(
+    "mousemove",
+    e => {
+
+        const rect =
+            world.getBoundingClientRect();
+
+        mouse.x =
+            e.clientX - rect.left;
+
+        mouse.y =
+            e.clientY - rect.top;
+
+    }
+);
+
+
+world.addEventListener(
+    "mousedown",
+    e => {
+
+        if(
+            e.target.closest("button")
+        )
+            return;
+
+        shoot();
+
+    }
+);
+
+
+/* ================= MONSTER ================= */
+
+const monsterTypes = [
+    ["Zombie","🧟",60,8,1.0],
+    ["Skeleton","💀",80,10,1.1],
+    ["Goblin","👺",100,12,1.2],
+    ["Demon","👿",150,18,.9]
+];
+
+
+function createMonster(){
+
+    const type =
+        monsterTypes[
+            Math.floor(
+                Math.random() *
+                monsterTypes.length
+            )
+        ];
+
+
+    const difficulty =
+        1 + locationIndex * .45;
+
+
+    const m = {
+
+        name:type[0],
+        icon:type[1],
+
+        x:
+            Math.random() *
+            (MAP_W - 200) + 100,
+
+        y:
+            Math.random() *
+            (MAP_H - 200) + 100,
+
+        hp:
+            Math.floor(type[2]*difficulty),
+
+        maxHP:
+            Math.floor(type[2]*difficulty),
+
+        damage:
+            Math.floor(type[3]*difficulty),
+
+        speed:
+            type[4],
+
+        attack:0,
+
+        el:null
+
+    };
+
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "monster";
+
+
+    el.innerHTML = `
+        <div class="monsterName">
+            ${m.name}
+        </div>
+
+        <div class="monsterBar">
+            <div class="monsterHP"></div>
+        </div>
+
+        <div class="monsterEmoji">
+            ${m.icon}
+        </div>
+    `;
+
+
+    map.appendChild(el);
+
+    m.el = el;
+
+    monsters.push(m);
+
+    drawMonster(m);
+
+}
+
+
+function drawMonster(m){
+
+    m.el.style.left =
+        m.x + "px";
+
+    m.el.style.top =
+        m.y + "px";
+
+    const hp =
+        m.el.querySelector(".monsterHP");
+
+    hp.style.width =
+        Math.max(
+            0,
+            m.hp/m.maxHP*100
+        ) + "%";
+
+}
+
+
+/* ================= MONSTER AI ================= */
+
+function updateMonsters(dt){
+
+    for(
+        const m of monsters
+    ){
+
+        const dx =
+            player.x - m.x;
+
+        const dy =
+            player.y - m.y;
+
+        const dist =
+            Math.sqrt(
+                dx*dx + dy*dy
+            );
+
+
+        if(dist > 75){
+
+            m.x +=
+                dx/dist *
+                m.speed *
+                dt/16;
+
+            m.y +=
+                dy/dist *
+                m.speed *
+                dt/16;
+
+        }else{
+
+            m.attack -= dt;
+
+            if(m.attack <= 0){
+
+                damagePlayer(
+                    m.damage
+                );
+
+                m.attack =
+                    1000;
+
+            }
+
+        }
+
+
+        drawMonster(m);
+
+    }
+
+}
+
+
+/* ================= SHOOT ================= */
+
+function shoot(){
+
+    if(paused || gameOver)
+        return;
+
+    if(player.arrows <= 0){
+
+        alert("🏹 O'q qolmagan!");
+        return;
+
+    }
+
+
+    player.arrows--;
+
+
+    const targetX =
+        mouse.x -
+        world.clientWidth/2 +
+        player.x;
+
+    const targetY =
+        mouse.y -
+        world.clientHeight/2 +
+        player.y;
+
+
+    const dx =
+        targetX - player.x;
+
+    const dy =
+        targetY - player.y;
+
+    const dist =
+        Math.sqrt(
+            dx*dx + dy*dy
+        );
+
+
+    if(!dist) return;
+
+
+    const p = {
+
+        x:player.x,
+        y:player.y,
+
+        dx:dx/dist,
+        dy:dy/dist,
+
+        speed:16,
+
+        el:null
+
+    };
+
+
+    const el =
+        document.createElement("div");
+
+    el.style.position =
+        "absolute";
+
+    el.style.width =
+        "18px";
+
+    el.style.height =
+        "5px";
+
+    el.style.background =
+        "#ffe26a";
+
+    el.style.borderRadius =
+        "5px";
+
+    el.style.zIndex =
+        "50";
+
+
+    map.appendChild(el);
+
+    p.el = el;
+
+    projectiles.push(p);
+
+    hud();
+
+}
+
+
+/* ================= PROJECTILES ================= */
+
+function updateProjectiles(dt){
+
+    for(
+        let i=projectiles.length-1;
+        i>=0;
+        i--
+    ){
+
+        const p =
+            projectiles[i];
+
+        p.x +=
+            p.dx*p.speed*dt/16;
+
+        p.y +=
+            p.dy*p.speed*dt/16;
+
+
+        p.el.style.left =
+            p.x + "px";
+
+        p.el.style.top =
+            p.y + "px";
+
+
+        let removed = false;
+
+
+        for(
+            const m of monsters
+        ){
+
+            const dx =
+                p.x-m.x;
+
+            const dy =
+                p.y-m.y;
+
+            const dist =
+                Math.sqrt(
+                    dx*dx+dy*dy
+                );
+
+
+            if(
+                dist < 45
+            ){
+
+                damageMonster(
+                    m,
+                    player.damage
+                );
+
+                removed = true;
+                break;
+
+            }
+
+        }
+
+
+        if(
+            boss &&
+            !removed
+        ){
+
+            const dx =
+                p.x-boss.x;
+
+            const dy =
+                p.y-boss.y;
+
+            const dist =
+                Math.sqrt(
+                    dx*dx+dy*dy
+                );
+
+
+            if(dist < 90){
+
+                damageBoss(
+                    player.damage
+                );
+
+                removed = true;
+
+            }
+
+        }
+
+
+        if(
+            removed ||
+            p.x<0 ||
+            p.y<0 ||
+            p.x>MAP_W ||
+            p.y>MAP_H
+        ){
+
+            p.el.remove();
+
+            projectiles.splice(
+                i,
+                1
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ================= DAMAGE MONSTER ================= */
+
+function damageMonster(
+    m,
+    base
+){
+
+    let damage =
+        base;
+
+    const critical =
+        Math.random()*100 <
+        player.critical;
+
+
+    if(critical)
+        damage *= 2;
+
+
+    damage =
+        Math.floor(damage);
+
+    m.hp -= damage;
+
+
+    damageText(
+        m.x,
+        m.y-40,
+        damage,
+        critical
+    );
+
+
+    effect(
+        m.x,
+        m.y
+    );
+
+
+    if(m.hp <= 0){
+
+        killMonster(m);
+
+    }else{
+
+        drawMonster(m);
+
+    }
+
+}
+
+
+/* ================= KILL MONSTER ================= */
+
+function killMonster(m){
+
+    const index =
+        monsters.indexOf(m);
+
+    if(index === -1)
+        return;
+
+
+    m.el.remove();
+
+    monsters.splice(
+        index,
+        1
+    );
+
+
+    player.kills++;
+
+    player.coins +=
+        10 + locationIndex*5;
+
+
+    addXP(
+        20 + locationIndex*10
+    );
+
+
+    hud();
+
+
+    if(
+        player.kills >=
+        5 + locationIndex*2 &&
+        !boss
+    ){
+
+        createBoss();
+
+    }
+
+
+    save();
+
+}
+
+
+/* ================= XP ================= */
+
+function addXP(x){
+
+    player.xp += x;
+
+
+    while(
+        player.xp >=
+        player.xpNeed
+    ){
+
+        player.xp -=
+            player.xpNeed;
+
+        player.level++;
+
+        player.xpNeed =
+            Math.floor(
+                player.xpNeed*1.35
+            );
+
+        player.maxHP += 15;
+
+        player.hp =
+            player.maxHP;
+
+        player.damage += 4;
+
+        player.critical =
+            Math.min(
+                50,
+                player.critical+1
+            );
+
+    }
+
+
+    hud();
+
+}
+
+
+/* ================= PLAYER DAMAGE ================= */
+
+function damagePlayer(amount){
+
+    if(gameOver)
+        return;
+
+
+    const final =
+        Math.max(
+            1,
+            amount-player.armor
+        );
+
+
+    player.hp -= final;
+
+
+    damageText(
+        player.x,
+        player.y-30,
+        final,
+        false
+    );
+
+
+    hud();
+
+
+    if(player.hp <= 0){
+
+        player.hp = 0;
+
+        gameOver = true;
+
+        document.getElementById(
+            "finalLevel"
+        ).textContent =
+            player.level;
+
+        document.getElementById(
+            "finalCoins"
+        ).textContent =
+            player.coins;
+
+        document.getElementById(
+            "finalKills"
+        ).textContent =
+            player.kills;
+
+        document.getElementById(
+            "gameOver"
+        ).classList.remove(
+            "hidden"
+        );
+
+    }
+
+}
+
+
+/* ================= BOSS ================= */
+
+function createBoss(){
+
+    const loc =
+        locations[locationIndex];
+
+
+    boss = {
+
+        x:
+            MAP_W-350,
+
+        y:
+            MAP_H-300,
+
+        hp:
+            700 +
+            locationIndex*500,
+
+        maxHP:
+            700 +
+            locationIndex*500,
+
+        damage:
+            20 +
+            locationIndex*8,
+
+        speed:
+            .7,
+
+        attack:0
+
+    };
+
+
+    document.getElementById(
+        "boss"
+    ).classList.remove(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "bossEmoji"
+    ).textContent =
+        ["👑","👹","🐲","💀","😈","👑"]
+        [locationIndex];
+
+
+    document.getElementById(
+        "bossName"
+    ).textContent =
+        "👑 " +
+        [
+            "Zombie King",
+            "Sand Demon",
+            "Ice Beast",
+            "Death Lord",
+            "Fire Demon",
+            "Monster King"
+        ][locationIndex];
+
+
+    document.getElementById(
+        "bossHud"
+    ).classList.remove(
+        "hidden"
+    );
+
+
+    drawBoss();
+
+}
+
+
+function drawBoss(){
+
+    if(!boss) return;
+
+
+    const el =
+        document.getElementById(
+            "boss"
+        );
+
+
+    el.style.left =
+        boss.x + "px";
+
+    el.style.top =
+        boss.y + "px";
+
+
+    document.getElementById(
+        "bossBar"
+    ).style.width =
+        Math.max(
+            0,
+            boss.hp/boss.maxHP*100
+        ) + "%";
+
+
+    document.getElementById(
+        "bossText"
+    ).textContent =
+        Math.max(
+            0,
+            Math.ceil(boss.hp)
+        ) +
+        " / " +
+        boss.maxHP;
+
+}
+
+
+function updateBoss(dt){
+
+    if(!boss)
+        return;
+
+
+    const dx =
+        player.x-boss.x;
+
+    const dy =
+        player.y-boss.y;
+
+    const dist =
+        Math.sqrt(
+            dx*dx+dy*dy
+        );
+
+
+    if(dist > 130){
+
+        boss.x +=
+            dx/dist *
+            boss.speed *
+            dt/16;
+
+        boss.y +=
+            dy/dist *
+            boss.speed *
+            dt/16;
+
+    }else{
+
+        boss.attack -= dt;
+
+        if(boss.attack <= 0){
+
+            damagePlayer(
+                boss.damage
+            );
+
+            boss.attack =
+                1200;
+
+        }
+
+    }
+
+
+    drawBoss();
+
+}
+
+
+function damageBoss(amount){
+
+    if(!boss)
+        return;
+
+
+    let damage =
+        amount;
+
+
+    const critical =
+        Math.random()*100 <
+        player.critical;
+
+
+    if(critical)
+        damage *= 2;
+
+
+    damage =
+        Math.floor(damage);
+
+
+    boss.hp -= damage;
+
+
+    damageText(
+        boss.x,
+        boss.y-90,
+        damage,
+        critical
+    );
+
+
+    effect(
+        boss.x,
+        boss.y
+    );
+
+
+    if(boss.hp <= 0){
+
+        bossDefeated();
+
+    }else{
+
+        drawBoss();
+
+    }
+
+}
+
+
+function bossDefeated(){
+
+    const reward =
+        500 +
+        locationIndex*250;
+
+
+    player.coins +=
+        reward;
+
+
+    addXP(
+        500 +
+        locationIndex*300
+    );
+
+
+    document.getElementById(
+        "boss"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    document.getElementById(
+        "bossHud"
+    ).classList.add(
+        "hidden"
+    );
+
+
+    boss = null;
+
+
+    alert(
+        "🏆 BOSS MAG'LUB BO'LDI!\n\n" +
+        "💰 +" + reward + " Coin"
+    );
+
+
+    if(
+        locationIndex <
+        locations.length-1
+    ){
+
+        locationIndex++;
+
+        alert(
+            "🗺️ Yangi lokatsiya ochildi: " +
+            locations[locationIndex][0]
+        );
+
+    }else{
+
+        alert(
+            "🏆 TABRIKLAYMIZ!\nBarcha bosslar mag'lub etildi!"
+        );
+
+    }
+
+
+    hud();
+
+    save();
+
+}
+
+
+/* ================= EFFECT ================= */
+
+function effect(x,y){
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "hit";
+
+    el.textContent =
+        "💥";
+
+    el.style.left =
+        x+"px";
+
+    el.style.top =
+        y+"px";
+
+    map.appendChild(el);
+
+    setTimeout(
+        ()=>el.remove(),
+        400
+    );
+
+}
+
+
+function damageText(
+    x,
+    y,
+    value,
+    critical
+){
+
+    const el =
+        document.createElement("div");
+
+    el.className =
+        "damage" +
+        (critical ? " critical":"");
+
+    el.textContent =
+        critical
+            ? "🎯 "+value+"!"
+            : value;
+
+    el.style.left =
+        x+"px";
+
+    el.style.top =
+        y+"px";
+
+    map.appendChild(el);
+
+    setTimeout(
+        ()=>el.remove(),
+        700
+    );
+
+}
+
+
+/* ================= POTION ================= */
+
+function potion(){
+
+    if(player.potions <= 0){
+
+        alert(
+            "🧪 Oq dori qolmagan!"
+        );
+
+        return;
+
+    }
+
+
+    if(player.hp >= player.maxHP){
+
+        alert(
+            "❤️ HP allaqachon to'liq!"
+        );
+
+        return;
+
+    }
+
+
+    player.potions--;
+
+    player.hp =
+        Math.min(
+            player.maxHP,
+            player.hp+50
+        );
+
+
+    hud();
+
+    save();
+
+}
+
+
+/* ================= SHOP ================= */
+
+function buyPotion(){
+
+    if(player.coins < 50){
+
+        alert("💰 Coin yetarli emas!");
+        return;
+
+    }
+
+    player.coins -= 50;
+    player.potions++;
+
+    hud();
+    save();
+
+}
+
+
+function buyArrows(){
+
+    if(player.coins < 30){
+
+        alert("💰 Coin yetarli emas!");
+        return;
+
+    }
+
+    player.coins -= 30;
+    player.arrows += 20;
+
+    hud();
+    save();
+
+}
+
+
+function buyWeapon(){
+
+    if(player.coins < 200){
+
+        alert("💰 Coin yetarli emas!");
+        return;
+
+    }
+
+    player.coins -= 200;
+    player.damage += 10;
+
+    hud();
+    save();
+
+}
+
+
+function buyArmor(){
+
+    if(player.coins < 300){
+
+        alert("💰 Coin yetarli emas!");
+        return;
+
+    }
+
+    player.coins -= 300;
+    player.armor += 10;
+
+    hud();
+    save();
+
+}
+
+
+/* ================= UPGRADES ================= */
+
+function upDamage(){
+
+    const cost =
+        player.damageLevel*100;
+
+    if(player.coins < cost){
+
+        alert(
+            "💰 " + cost +
+            " Coin kerak!"
+        );
+
+        return;
+
+    }
+
+    player.coins -= cost;
+    player.damageLevel++;
+    player.damage += 5;
+
+    hud();
+    save();
+
+}
+
+
+function upHP(){
+
+    const cost =
+        player.hpLevel*120;
+
+    if(player.coins < cost){
+
+        alert(
+            "💰 " + cost +
+            " Coin kerak!"
+        );
+
+        return;
+
+    }
+
+    player.coins -= cost;
+    player.hpLevel++;
+    player.maxHP += 25;
+    player.hp =
+        player.maxHP;
+
+    hud();
+    save();
+
+}
+
+
+function upCritical(){
+
+    const cost =
+        player.criticalLevel*150;
+
+    if(player.coins < cost){
+
+        alert(
+            "💰 " + cost +
+            " Coin kerak!"
+        );
+
+        return;
+
+    }
+
+    player.coins -= cost;
+    player.criticalLevel++;
+
+    player.critical =
+        Math.min(
+            50,
+            player.critical+3
+        );
+
+    hud();
+    save();
+
+}
+
+
+function upSpeed(){
+
+    const cost =
+        player.speedLevel*100;
+
+    if(player.coins < cost){
+
+        alert(
+            "💰 " + cost +
+            " Coin kerak!"
+        );
+
+        return;
+
+    }
+
+    player.coins -= cost;
+    player.speedLevel++;
+    player.speed += .7;
+
+    hud();
+    save();
+
+}
+
+
+/* ================= PAUSE ================= */
+
+function togglePause(){
+
+    if(gameOver)
+        return;
+
+    paused =
+        !paused;
+
+    document.getElementById(
+        "pausePanel"
+    ).classList.toggle(
+        "hidden",
+        !paused
+    );
+
+}
+
+
+/* ================= RESTART ================= */
+
+function restart(){
+
+    location.reload();
+
+}
+
+
+/* ================= PANELS ================= */
+
+document.getElementById(
+    "shop"
+).onclick = () => {
+
+    document.getElementById(
+        "shopPanel"
+    ).classList.remove(
+        "hidden"
+    );
+
+};
+
+
+document.getElementById(
+    "upgrade"
+).onclick = () => {
+
+    document.getElementById(
+        "upgradePanel"
+    ).classList.remove(
+        "hidden"
+    );
+
+};
+
+
+document.getElementById(
+    "mapButton"
+).onclick = () => {
+
+    document.getElementById(
+        "mapPanel"
+    ).classList.remove(
+        "hidden"
+    );
+
+};
+
+
+document.querySelectorAll(
+    "[data-close]"
+).forEach(btn => {
+
+    btn.onclick = () => {
+
+        document.getElementById(
+            btn.dataset.close
+        ).classList.add(
+            "hidden"
+        );
+
+    };
+
+});
+
+
+/* ================= BUTTONS ================= */
+
+document.getElementById(
+    "shoot"
+).onclick = shoot;
+
+document.getElementById(
+    "melee"
+).onclick = melee;
+
+document.getElementById(
+    "potion"
+).onclick = potion;
+
+document.getElementById(
+    "pause"
+).onclick = togglePause;
+
+document.getElementById(
+    "continue"
+).onclick = togglePause;
+
+document.getElementById(
+    "restart"
+).onclick = restart;
+
+document.getElementById(
+    "gameRestart"
+).onclick = restart;
+
+
+document.getElementById(
+    "buyPotion"
+).onclick = buyPotion;
+
+document.getElementById(
+    "buyArrows"
+).onclick = buyArrows;
+
+document.getElementById(
+    "buyWeapon"
+).onclick = buyWeapon;
+
+document.getElementById(
+    "buyArmor"
+).onclick = buyArmor;
+
+
+document.getElementById(
+    "upDamage"
+).onclick = upDamage;
+
+document.getElementById(
+    "upHP"
+).onclick = upHP;
+
+document.getElementById(
+    "upCritical"
+).onclick = upCritical;
+
+document.getElementById(
+    "upSpeed"
+).onclick = upSpeed;
+
+
+/* ================= LOCATIONS ================= */
+
+document.querySelectorAll(
+    ".locationBtn"
+).forEach(btn => {
+
+    btn.onclick = () => {
+
+        const index =
+            Number(
+                btn.dataset.location
+            );
+
+
+        if(
+            player.level <
+            locations[index][2]
+        ){
+
+            alert(
+                "🔒 Bu lokatsiya uchun Level " +
+                locations[index][2] +
+                " kerak!"
+            );
+
+            return;
+
+        }
+
+
+        locationIndex =
+            index;
+
+
+        monsters.forEach(
+            m => m.el.remove()
+        );
+
+        monsters = [];
+
+
+        if(boss){
+
+            document.getElementById(
+                "boss"
+            ).classList.add(
+                "hidden"
+            );
+
+            document.getElementById(
+                "bossHud"
+            ).classList.add(
+                "hidden"
+            );
+
+            boss = null;
+
+        }
+
+
+        document.getElementById(
+            "mapPanel"
+        ).classList.add(
+            "hidden"
+        );
+
+
+        hud();
+
+        save();
+
+    };
+
+});
+
+
+/* ================= MELEE ================= */
+
+function melee(){
+
+    if(paused || gameOver)
+        return;
+
+
+    for(
+        const m of [...monsters]
+    ){
+
+        const dx =
+            m.x-player.x;
+
+        const dy =
+            m.y-player.y;
+
+        const dist =
+            Math.sqrt(
+                dx*dx+dy*dy
+            );
+
+
+        if(dist < 110){
+
+            damageMonster(
+                m,
+                player.damage*1.4
+            );
+
+        }
+
+    }
+
+
+    if(boss){
+
+        const dx =
+            boss.x-player.x;
+
+        const dy =
+            boss.y-player.y;
+
+        const dist =
+            Math.sqrt(
+                dx*dx+dy*dy
+            );
+
+
+        if(dist < 150){
+
+            damageBoss(
+                player.damage*1.5
+            );
+
+        }
+
+    }
+
+}
+
+
+/* ================= MOBILE ================= */
+
+document.querySelectorAll(
+    ".moveBtn"
+).forEach(btn => {
+
+    const key =
+        btn.dataset.key;
+
+
+    let timer;
+
+
+    function start(e){
+
+        e.preventDefault();
+
+        if(key==="up")
+            keys.ArrowUp=true;
+
+        if(key==="down")
+            keys.ArrowDown=true;
+
+        if(key==="left")
+            keys.ArrowLeft=true;
+
+        if(key==="right")
+            keys.ArrowRight=true;
+
+    }
+
+
+    function stop(e){
+
+        e.preventDefault();
+
+        if(key==="up")
+            keys.ArrowUp=false;
+
+        if(key==="down")
+            keys.ArrowDown=false;
+
+        if(key==="left")
+            keys.ArrowLeft=false;
+
+        if(key==="right")
+            keys.ArrowRight=false;
+
+    }
+
+
+    btn.addEventListener(
+        "touchstart",
+        start,
+        {passive:false}
+    );
+
+    btn.addEventListener(
+        "touchend",
+        stop,
+        {passive:false}
+    );
+
+    btn.addEventListener(
+        "mousedown",
+        start
+    );
+
+    btn.addEventListener(
+        "mouseup",
+        stop
+    );
+
+});
+
+
+document.getElementById(
+    "mobileShoot"
+).onclick = shoot;
+
+
+document.getElementById(
+    "mobileMelee"
+).onclick = melee;
+
+
+/* ================= GAME LOOP ================= */
+
+function loop(now){
+
+    const dt =
+        Math.min(
+            40,
+            now-lastTime
+        );
+
+    lastTime = now;
+
+
+    if(!paused && !gameOver){
+
+        move(dt);
+
+        updateMonsters(dt);
+
+        updateProjectiles(dt);
+
+        updateBoss(dt);
+
+        spawnTimer += dt;
+
+
+        const max =
+            5 + locationIndex*2;
+
+
+        if(
+            spawnTimer > 1400 &&
+            monsters.length < max
+        ){
+
+            createMonster();
+
+            spawnTimer = 0;
+
+        }
+
+
+        camera();
+
+    }
+
+
+    requestAnimationFrame(loop);
+
+}
+
+
+/* ================= START ================= */
+
+load();
+
+hud();
+
+drawPlayer();
+
+camera();
+
+
+for(let i=0;i<6;i++){
+
+    createMonster();
+
+}
+
+
+requestAnimationFrame(loop);
+
+
+/* AUTO SAVE */
+
+setInterval(
+    save,
+    5000
+);
+
+</script>
+
+</body>
+</html>
